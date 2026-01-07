@@ -1,0 +1,41 @@
+{
+  "target": "target_units_next_day",
+  "split_date": "2025-07-01",
+  "train_rows": 6396,
+  "valid_rows": 2196,
+  "metrics": {
+    "baseline": {
+      "mae": 12.519581056466302,
+      "wape": 0.24937640026485983
+    },
+    "ridge": {
+      "mae": 8.705174777969898,
+      "wape": 0.1733975873486072
+    }
+  },
+  "features": {
+    "numeric": [
+      "price",
+      "promo_flag",
+      "dayofweek",
+      "month",
+      "weekofyear",
+      "is_weekend",
+      "units_lag_1",
+      "units_lag_7",
+      "units_lag_14",
+      "units_roll7_mean",
+      "units_roll14_mean",
+      "price_lag_1",
+      "price_lag_7",
+      "price_lag_14",
+      "promo_lag_1",
+      "promo_lag_7",
+      "promo_lag_14"
+    ],
+    "categorical": [
+      "sku",
+      "channel"
+    ]
+  }
+}
