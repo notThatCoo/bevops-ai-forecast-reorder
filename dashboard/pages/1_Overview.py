@@ -6,6 +6,7 @@ from pathlib import Path
 
 FORECAST_FILE = Path("data/processed/forecast.parquet")
 META_FILE = Path("models/metadata.json")
+DECISION_FILE = Path("data/processed/decision_report.csv")
 
 def wape(y_true, y_pred):
     denom = np.sum(np.abs(y_true))
@@ -41,6 +42,14 @@ k1, k2, k3 = st.columns(3)
 k1.metric("MAE (avg abs error)", f"{mae:.3f}")
 k2.metric("WAPE", f"{wape_val:.3f}")
 k3.metric("Rows", f"{len(filtered)}")
+
+st.subheader("Decision Summary (Today)")
+if DECISION_FILE.exists():
+    dec = pd.read_csv(DECISION_FILE)
+    st.dataframe(dec.head(25), use_container_width=True)
+else:
+    st.warning("Decision report missing. Run: `python -m src.decision`")
+
 
 # Metadata (if present)
 if META_FILE.exists():
