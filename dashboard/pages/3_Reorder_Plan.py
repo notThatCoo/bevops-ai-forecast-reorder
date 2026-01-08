@@ -2,36 +2,43 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 
-REORDER_FILE = Path("data/processed/reorder_plan.csv")
-
 DECISION_FILE = Path("data/processed/decision_report.csv")
 REORDER_FILE = Path("data/processed/reorder_plan.csv")
 
+st.title("Reorder Plan")
+
+# Prefer decision report (more human), fallback to reorder plan
 if DECISION_FILE.exists():
     df = pd.read_csv(DECISION_FILE)
-    st.caption("Showing decision report (includes confidence + reasons + adjusted reorder).")
+    st.caption("Showing decision report (confidence + reasons + adjusted reorder).")
+    download_name = "decision_report.csv"
 elif REORDER_FILE.exists():
     df = pd.read_csv(REORDER_FILE)
     st.caption("Showing reorder plan (basic).")
+    download_name = "reorder_plan.csv"
 else:
-    st.warning("Missing decision report and reorder plan. Run: `python -m src.predict`, `python -m src.reorder`, `python -m src.decision`.")
+    st.warning(
+        "Missing decision report and reorder plan.\n\n"
+        "Run:\n"
+        "- `python -m src.predict`\n"
+        "- `python -m src.reorder`\n"
+        "- `python -m src.decision`"
+    )
     st.stop()
 
-st.title("Reorder Plan")
-
-if not REORDER_FILE.exists():
-    st.warning("Reorder plan not generated yet. Next step is `src/reorder.py` to create `data/processed/reorder_plan.csv`.")
-    st.stop()
-
-df = pd.read_csv(REORDER_FILE)
-
+# Optional filter if channel exists
 st.sidebar.header("Filters")
-channels = ["All"] + sorted(df["channel"].unique().tolist()) if "channel" in df.columns else ["All"]
-sel_channel = st.sidebar.selectbox("Channel", channels)
+if "channel" in df.columns:
+    channels = ["All"] + sorted(df["channel"].dropna().unique().tolist())
+    sel_channel = st.sidebar.selectbox("Channel", channels)
+    if sel_channel != "All":
+        df = df[df["channel"] == sel_channel]
 
-filtered = df.copy()
-if sel_channel != "All" and "channel" in filtered.columns:
-    filtered = filtered[filtered["channel"] == sel_channel]
+st.dataframe(df, use_container_width=True)
 
-st.dataframe(filtered, use_container_width=True)
-st.download_button("Download CSV", filtered.to_csv(index=False), file_name="reorder_plan.csv", mime="text/csv")
+st.download_button(
+    "Download CSV",
+    df.to_csv(index=False),
+    file_name=download_name,
+    mime="text/csv",
+)
